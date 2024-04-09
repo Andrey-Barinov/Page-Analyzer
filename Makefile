@@ -11,4 +11,8 @@ start:
 lint:
 	poetry run flake8 page_analyzer
 
+selfcheck:
+	poetry check
 
+check:
+	selfcheck lint
