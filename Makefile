@@ -1,6 +1,9 @@
 install:
 	poetry install
 
+debug-mode:
+	poetry run flask --app page_analyzer:app --debug run --port 8000
+
 dev:
 	poetry run flask --app page_analyzer:app run
 
@@ -16,3 +19,4 @@ selfcheck:
 
 check:
 	selfcheck lint
+
