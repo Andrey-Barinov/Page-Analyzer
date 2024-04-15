@@ -21,6 +21,6 @@ selfcheck:
 	poetry check
 
 check:
-	selfcheck lint
+	 make lint
 
 .PHONY: install lint selfcheck check build
