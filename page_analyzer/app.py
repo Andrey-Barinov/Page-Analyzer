@@ -15,7 +15,9 @@ from page_analyzer.db import (
     add_url_to_db,
     get_url_by_id,
     get_url_by_name,
-    get_all_urls_desc
+    add_check,
+    get_checks_desc,
+    get_url_with_latest_check
 )
 
 
@@ -49,7 +51,7 @@ def add_url():
 
         flash('Страница уже существует', 'primary')
 
-        return redirect(url_for('show_url', id=old_url_data['id']))
+        return redirect(url_for('show_url', id=old_url_data[0].id))
 
     add_url_to_db(normal_url)
 
@@ -57,12 +59,12 @@ def add_url():
 
     flash('Страница успешно добавлена', 'success')
 
-    return redirect(url_for('show_url', id=new_url_data['id']))
+    return redirect(url_for('show_url', id=new_url_data[0].id))
 
 
 @app.get('/urls')
 def show_all_urls():
-    all_urls = get_all_urls_desc()
+    all_urls = get_url_with_latest_check()
 
     return render_template('urls.html', all_urls=all_urls)
 
@@ -70,6 +72,19 @@ def show_all_urls():
 @app.get('/urls/<id>')
 def show_url(id):
     url_data = get_url_by_id(id)
+    all_checks = get_checks_desc(id)
     message = get_flashed_messages(with_categories=True)
 
-    return render_template('url.html', url_data=url_data, message=message)
+    return render_template(
+        'url.html',
+        url_data=url_data,
+        all_checks=all_checks,
+        message=message
+    )
+
+
+@app.post('/urls/<id>/checks')
+def add_and_show_checks(id):
+    add_check(id)
+
+    return redirect(url_for('show_url', id=id))

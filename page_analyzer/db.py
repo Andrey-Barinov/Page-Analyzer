@@ -27,37 +27,16 @@ def add_url_to_db(url):
         conn.close()
 
 
-def trans_urls(urls):
-    result = []
-    if not isinstance(urls, list):
-        return {
-            'id': urls.id,
-            'name': urls.name,
-            'created_at': str(urls.created_at)
-        }
-
-    for url in urls:
-        url_data = {
-            'id': url.id,
-            'name': url.name,
-            'created_at': str(url.created_at)
-        }
-
-        result.append(url_data)
-
-    return result
-
-
 def get_url_by_name(url):
     conn = psycopg2.connect(DATABASE_URL)
 
     with conn.cursor(cursor_factory=NamedTupleCursor) as cur:
         cur.execute("SELECT * FROM urls WHERE name = %s", (url,))
 
-        url = cur.fetchone()
+        url = cur.fetchall()
 
         if url:
-            url_data = trans_urls(url)
+            url_data = url
         else:
             url_data = None
 
@@ -73,9 +52,7 @@ def get_url_by_id(url_id):
     with conn.cursor(cursor_factory=NamedTupleCursor) as cur:
         cur.execute("SELECT * FROM urls WHERE id = %s", (url_id,))
 
-        url = cur.fetchone()
-
-        url_data = trans_urls(url)
+        url_data = cur.fetchall()
 
         conn.commit()
         conn.close()
@@ -90,9 +67,59 @@ def get_all_urls_desc():
         cur.execute("SELECT * FROM urls ORDER BY id DESC")
 
         all_urls = cur.fetchall()
-        all_urls_data = trans_urls(all_urls)
 
         conn.commit()
         conn.close()
 
-    return all_urls_data
+    return all_urls
+
+
+def add_check(url_id):
+    conn = psycopg2.connect(DATABASE_URL)
+
+    with conn.cursor() as cur:
+        cur.execute("INSERT INTO url_checks (url_id) VALUES (%s)", (url_id,))
+        conn.commit()
+        conn.close()
+
+
+def get_url_with_latest_check():
+    conn = psycopg2.connect(DATABASE_URL)
+
+    with conn.cursor(cursor_factory=NamedTupleCursor) as cur:
+        cur.execute(
+            "SELECT urls.id,"
+            " urls.name, "
+            "COALESCE(MAX(url_checks.created_at)::text, '') as latest_check "
+            "FROM urls "
+            "LEFT JOIN url_checks ON urls.id = url_checks.url_id "
+            "GROUP BY urls.id "
+            "ORDER BY urls.id DESC",
+        )
+
+        all_url_with_latest_checks = cur.fetchall()
+
+        conn.commit()
+        conn.close()
+
+        return all_url_with_latest_checks
+
+
+def get_checks_desc(url_id):
+    conn = psycopg2.connect(DATABASE_URL)
+
+    with conn.cursor(cursor_factory=NamedTupleCursor) as cur:
+        cur.execute(
+            "SELECT id, created_at::text "
+            "FROM url_checks "
+            "WHERE url_id = %s "
+            "ORDER BY id DESC",
+            (url_id,)
+        )
+
+        all_checks = cur.fetchall()
+
+        conn.commit()
+        conn.close()
+
+    return all_checks
