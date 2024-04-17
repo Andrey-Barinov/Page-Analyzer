@@ -10,7 +10,7 @@ CREATE TABLE urls (
 CREATE TABLE url_checks (
     id SERIAL PRIMARY KEY,
     url_id SERIAL REFERENCES urls (id),
---    status_code int,
+    status_code int,
 --    h1 varchar(255),
 --    title varchar(255),
 --    description text,

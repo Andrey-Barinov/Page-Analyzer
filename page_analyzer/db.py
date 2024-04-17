@@ -7,6 +7,7 @@ load_dotenv()
 
 DATABASE_URL = os.getenv('DATABASE_URL')
 
+
 # conn = psycopg2.connect(DATABASE_URL)
 #
 #
@@ -74,11 +75,14 @@ def get_all_urls_desc():
     return all_urls
 
 
-def add_check(url_id):
+def add_check_to_db(url_id, status_code):
     conn = psycopg2.connect(DATABASE_URL)
 
     with conn.cursor() as cur:
-        cur.execute("INSERT INTO url_checks (url_id) VALUES (%s)", (url_id,))
+        cur.execute("INSERT INTO url_checks (url_id, status_code) "
+                    "VALUES (%s, %s)",
+                    (url_id, status_code)
+                    )
         conn.commit()
         conn.close()
 
@@ -88,12 +92,13 @@ def get_url_with_latest_check():
 
     with conn.cursor(cursor_factory=NamedTupleCursor) as cur:
         cur.execute(
-            "SELECT urls.id,"
-            " urls.name, "
+            "SELECT urls.id, "
+            "urls.name, "
+            "COALESCE(url_checks.status_code::text, '') as status_code, "
             "COALESCE(MAX(url_checks.created_at)::text, '') as latest_check "
             "FROM urls "
             "LEFT JOIN url_checks ON urls.id = url_checks.url_id "
-            "GROUP BY urls.id "
+            "GROUP BY urls.id, url_checks.status_code "
             "ORDER BY urls.id DESC",
         )
 
@@ -110,7 +115,7 @@ def get_checks_desc(url_id):
 
     with conn.cursor(cursor_factory=NamedTupleCursor) as cur:
         cur.execute(
-            "SELECT id, created_at::text "
+            "SELECT id, status_code, created_at::text "
             "FROM url_checks "
             "WHERE url_id = %s "
             "ORDER BY id DESC",

@@ -1,4 +1,5 @@
 import os
+import requests
 from dotenv import load_dotenv
 from page_analyzer.url_validator import validate
 from urllib.parse import urlparse
@@ -15,7 +16,7 @@ from page_analyzer.db import (
     add_url_to_db,
     get_url_by_id,
     get_url_by_name,
-    add_check,
+    add_check_to_db,
     get_checks_desc,
     get_url_with_latest_check
 )
@@ -84,7 +85,23 @@ def show_url(id):
 
 
 @app.post('/urls/<id>/checks')
-def add_and_show_checks(id):
-    add_check(id)
+def add_check(id):
+    url = get_url_by_id(id)
+
+    try:
+        response = requests.get(url[0].name)
+        response.raise_for_status()
+
+    except requests.exceptions.RequestException:
+
+        flash('Произошла ошибка при проверке', 'danger')
+
+        return redirect(url_for('show_url', id=id))
+
+    status_code = response.status_code
+
+    add_check_to_db(id, status_code)
+
+    flash('Страница успешно проверена', 'success')
 
     return redirect(url_for('show_url', id=id))
