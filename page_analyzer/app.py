@@ -103,9 +103,11 @@ def add_check(id):
 
     html_data = BeautifulSoup(response.text, 'html.parser')
 
-    title = html_data.title.string
-    h1 = html_data.h1.string
-    description = html_data.find('meta', {'name': 'description'}).get('content')
+    title = html_data.title.string if html_data.title else None
+    h1 = html_data.h1.string if html_data.h1 else None
+    description = html_data.find('meta', {'name': 'description'})
+    if description:
+        description = description.get('content')
 
     add_check_to_db(id, status_code, h1, title, description)
 
