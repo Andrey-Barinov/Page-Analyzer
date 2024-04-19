@@ -1,5 +1,5 @@
-DROP TABLE IF EXISTS urls;
 DROP TABLE IF EXISTS url_checks;
+DROP TABLE IF EXISTS urls;
 
 CREATE TABLE urls (
     id SERIAL PRIMARY KEY,
@@ -9,11 +9,11 @@ CREATE TABLE urls (
 
 CREATE TABLE url_checks (
     id SERIAL PRIMARY KEY,
-    url_id SERIAL REFERENCES urls (id),
+    url_id int,
     status_code int,
---    h1 varchar(255),
---    title varchar(255),
---    description text,
+    h1 varchar(255),
+    title varchar(255),
+    description text,
     created_at date DEFAULT CURRENT_DATE
 )
 

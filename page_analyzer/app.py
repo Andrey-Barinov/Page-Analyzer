@@ -3,6 +3,7 @@ import requests
 from dotenv import load_dotenv
 from page_analyzer.url_validator import validate
 from urllib.parse import urlparse
+from bs4 import BeautifulSoup
 from flask import (
     Flask,
     render_template,
@@ -21,10 +22,12 @@ from page_analyzer.db import (
     get_url_with_latest_check
 )
 
+soup = BeautifulSoup('https://ru.hexlet.io/', 'html.parser')
+print(soup.prettify())
 
 load_dotenv()
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY')
 
 
 @app.get('/')
@@ -100,7 +103,14 @@ def add_check(id):
 
     status_code = response.status_code
 
-    add_check_to_db(id, status_code)
+    html_data = BeautifulSoup(response.text, 'html.parser')
+
+    title = html_data.title.string
+    h1 = html_data.h1.string
+    description = html_data.find('meta', {'name': 'description'}).get('content')
+
+
+    add_check_to_db(id, status_code, h1, title, description)
 
     flash('Страница успешно проверена', 'success')
 

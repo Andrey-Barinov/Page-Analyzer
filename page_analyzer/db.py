@@ -75,13 +75,19 @@ def get_all_urls_desc():
     return all_urls
 
 
-def add_check_to_db(url_id, status_code):
+def add_check_to_db(url_id, status_code, h1, title, description):
     conn = psycopg2.connect(DATABASE_URL)
 
     with conn.cursor() as cur:
-        cur.execute("INSERT INTO url_checks (url_id, status_code) "
-                    "VALUES (%s, %s)",
-                    (url_id, status_code)
+        cur.execute("INSERT INTO url_checks ("
+                    "url_id, "
+                    "status_code,"
+                    "h1, "
+                    "title, "
+                    "description "
+                    ") "
+                    "VALUES (%s, %s, %s, %s, %s)",
+                    (url_id, status_code, h1, title, description)
                     )
         conn.commit()
         conn.close()
@@ -115,7 +121,12 @@ def get_checks_desc(url_id):
 
     with conn.cursor(cursor_factory=NamedTupleCursor) as cur:
         cur.execute(
-            "SELECT id, status_code, created_at::text "
+            "SELECT id, "
+            "status_code, "
+            "COALESCE(h1, '') as h1, "
+            "COALESCE(title, '') as title, "
+            "COALESCE(description, '') as description, "
+            "created_at::text "
             "FROM url_checks "
             "WHERE url_id = %s "
             "ORDER BY id DESC",
