@@ -22,12 +22,10 @@ from page_analyzer.db import (
     get_url_with_latest_check
 )
 
-soup = BeautifulSoup('https://ru.hexlet.io/', 'html.parser')
-print(soup.prettify())
 
 load_dotenv()
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY')
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 
 
 @app.get('/')
@@ -73,7 +71,7 @@ def show_all_urls():
     return render_template('urls.html', all_urls=all_urls)
 
 
-@app.get('/urls/<id>')
+@app.get('/urls/<int:id>')
 def show_url(id):
     url_data = get_url_by_id(id)
     all_checks = get_checks_desc(id)
@@ -108,7 +106,6 @@ def add_check(id):
     title = html_data.title.string
     h1 = html_data.h1.string
     description = html_data.find('meta', {'name': 'description'}).get('content')
-
 
     add_check_to_db(id, status_code, h1, title, description)
 

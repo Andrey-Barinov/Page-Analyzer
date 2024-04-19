@@ -8,18 +8,6 @@ load_dotenv()
 DATABASE_URL = os.getenv('DATABASE_URL')
 
 
-# conn = psycopg2.connect(DATABASE_URL)
-#
-#
-# sql_file_path = os.path.join('..', 'database.sql')
-#
-# with conn.cursor() as cur, open(sql_file_path, 'r') as data_base:
-#     cur.execute(data_base.read())
-#
-#     conn.commit()
-#     conn.close()
-
-
 def add_url_to_db(url):
     conn = psycopg2.connect(DATABASE_URL)
     with conn.cursor() as cur:
