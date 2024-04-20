@@ -43,7 +43,8 @@ def add_url():
 
     if error:
         flash(f'{error}', 'danger')
-        return redirect(url_for('page_analyzer')), 422
+        message = get_flashed_messages(with_categories=True)
+        return render_template('index.html', message=message), 422
 
     parsed_url = urlparse(new_url)
     normal_url = f"{parsed_url.scheme}://{parsed_url.netloc}"
