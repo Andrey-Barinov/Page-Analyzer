@@ -43,7 +43,7 @@ def add_url():
 
     if error:
         flash(f'{error}', 'danger')
-        return redirect(url_for('page_analyzer'))
+        return redirect(url_for('page_analyzer')), 422
 
     parsed_url = urlparse(new_url)
     normal_url = f"{parsed_url.scheme}://{parsed_url.netloc}"
@@ -97,7 +97,7 @@ def add_check(id):
 
         flash('Произошла ошибка при проверке', 'danger')
 
-        return redirect(url_for('show_url', id=id)), 422
+        return redirect(url_for('show_url', id=id))
 
     status_code = response.status_code
 
