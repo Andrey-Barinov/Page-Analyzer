@@ -97,7 +97,7 @@ def add_check(id):
 
         flash('Произошла ошибка при проверке', 'danger')
 
-        return redirect(url_for('show_url', id=id))
+        return redirect(url_for('show_url', id=id)), 422
 
     status_code = response.status_code
 
