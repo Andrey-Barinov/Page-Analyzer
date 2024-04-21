@@ -19,7 +19,7 @@ from page_analyzer.db import (
     get_url_by_name,
     add_check_to_db,
     get_checks_desc,
-    get_url_with_latest_check
+    get_urls_with_latest_check
 )
 
 
@@ -67,7 +67,7 @@ def add_url():
 
 @app.get('/urls')
 def show_all_urls():
-    all_urls = get_url_with_latest_check()
+    all_urls = get_urls_with_latest_check()
 
     return render_template('urls.html', all_urls=all_urls)
 

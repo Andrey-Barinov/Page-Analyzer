@@ -12,6 +12,17 @@ def get_connection():
     return psycopg2.connect(DATABASE_URL)
 
 
+def fetch_all(connection, query, values=()):
+    with connection.cursor(cursor_factory=NamedTupleCursor) as cur:
+        cur.execute(query, values)
+
+        data = cur.fetchall()
+
+        connection.commit()
+        connection.close()
+    return data
+
+
 def add_url_to_db(url):
     conn = get_connection()
     with conn.cursor() as cur:
@@ -22,49 +33,22 @@ def add_url_to_db(url):
 
 def get_url_by_name(url):
     conn = get_connection()
+    query = "SELECT * FROM urls WHERE name = %s"
+    value = (url,)
 
-    with conn.cursor(cursor_factory=NamedTupleCursor) as cur:
-        cur.execute("SELECT * FROM urls WHERE name = %s", (url,))
-
-        url = cur.fetchall()
-
-        if url:
-            url_data = url
-        else:
-            url_data = None
-
-        conn.commit()
-        conn.close()
+    url_data = fetch_all(conn, query, value)
 
     return url_data
 
 
 def get_url_by_id(url_id):
     conn = get_connection()
+    query = "SELECT * FROM urls WHERE id = %s"
+    value = (url_id,)
 
-    with conn.cursor(cursor_factory=NamedTupleCursor) as cur:
-        cur.execute("SELECT * FROM urls WHERE id = %s", (url_id,))
-
-        url_data = cur.fetchall()
-
-        conn.commit()
-        conn.close()
+    url_data = fetch_all(conn, query, value)
 
     return url_data
-
-
-def get_all_urls_desc():
-    conn = get_connection()
-
-    with conn.cursor(cursor_factory=NamedTupleCursor) as cur:
-        cur.execute("SELECT * FROM urls ORDER BY id DESC")
-
-        all_urls = cur.fetchall()
-
-        conn.commit()
-        conn.close()
-
-    return all_urls
 
 
 def add_check_to_db(url_id, status_code, h1, title, description):
@@ -85,49 +69,35 @@ def add_check_to_db(url_id, status_code, h1, title, description):
         conn.close()
 
 
-def get_url_with_latest_check():
+def get_urls_with_latest_check():
     conn = get_connection()
+    query = "SELECT urls.id, "\
+            "urls.name, "\
+            "COALESCE(url_checks.status_code::text, '') as status_code, "\
+            "COALESCE(MAX(url_checks.created_at)::text, '') as latest_check "\
+            "FROM urls "\
+            "LEFT JOIN url_checks ON urls.id = url_checks.url_id "\
+            "GROUP BY urls.id, url_checks.status_code "\
+            "ORDER BY urls.id DESC"
 
-    with conn.cursor(cursor_factory=NamedTupleCursor) as cur:
-        cur.execute(
-            "SELECT urls.id, "
-            "urls.name, "
-            "COALESCE(url_checks.status_code::text, '') as status_code, "
-            "COALESCE(MAX(url_checks.created_at)::text, '') as latest_check "
-            "FROM urls "
-            "LEFT JOIN url_checks ON urls.id = url_checks.url_id "
-            "GROUP BY urls.id, url_checks.status_code "
-            "ORDER BY urls.id DESC",
-        )
+    all_urls_with_latest_check = fetch_all(conn, query)
 
-        all_url_with_latest_checks = cur.fetchall()
-
-        conn.commit()
-        conn.close()
-
-        return all_url_with_latest_checks
+    return all_urls_with_latest_check
 
 
 def get_checks_desc(url_id):
     conn = psycopg2.connect(DATABASE_URL)
+    query = "SELECT id, "\
+            "status_code, "\
+            "COALESCE(h1, '') as h1, "\
+            "COALESCE(title, '') as title, "\
+            "COALESCE(description, '') as description, "\
+            "created_at::text "\
+            "FROM url_checks "\
+            "WHERE url_id = %s "\
+            "ORDER BY id DESC"
+    value = (url_id,)
 
-    with conn.cursor(cursor_factory=NamedTupleCursor) as cur:
-        cur.execute(
-            "SELECT id, "
-            "status_code, "
-            "COALESCE(h1, '') as h1, "
-            "COALESCE(title, '') as title, "
-            "COALESCE(description, '') as description, "
-            "created_at::text "
-            "FROM url_checks "
-            "WHERE url_id = %s "
-            "ORDER BY id DESC",
-            (url_id,)
-        )
-
-        all_checks = cur.fetchall()
-
-        conn.commit()
-        conn.close()
+    all_checks = fetch_all(conn, query, value)
 
     return all_checks
