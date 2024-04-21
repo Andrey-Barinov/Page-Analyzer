@@ -8,8 +8,12 @@ load_dotenv()
 DATABASE_URL = os.getenv('DATABASE_URL')
 
 
+def get_connection():
+    return psycopg2.connect(DATABASE_URL)
+
+
 def add_url_to_db(url):
-    conn = psycopg2.connect(DATABASE_URL)
+    conn = get_connection()
     with conn.cursor() as cur:
         cur.execute("INSERT INTO urls (name) VALUES (%s)", (url,))
         conn.commit()
@@ -17,7 +21,7 @@ def add_url_to_db(url):
 
 
 def get_url_by_name(url):
-    conn = psycopg2.connect(DATABASE_URL)
+    conn = get_connection()
 
     with conn.cursor(cursor_factory=NamedTupleCursor) as cur:
         cur.execute("SELECT * FROM urls WHERE name = %s", (url,))
@@ -36,7 +40,7 @@ def get_url_by_name(url):
 
 
 def get_url_by_id(url_id):
-    conn = psycopg2.connect(DATABASE_URL)
+    conn = get_connection()
 
     with conn.cursor(cursor_factory=NamedTupleCursor) as cur:
         cur.execute("SELECT * FROM urls WHERE id = %s", (url_id,))
@@ -50,7 +54,7 @@ def get_url_by_id(url_id):
 
 
 def get_all_urls_desc():
-    conn = psycopg2.connect(DATABASE_URL)
+    conn = get_connection()
 
     with conn.cursor(cursor_factory=NamedTupleCursor) as cur:
         cur.execute("SELECT * FROM urls ORDER BY id DESC")
@@ -64,7 +68,7 @@ def get_all_urls_desc():
 
 
 def add_check_to_db(url_id, status_code, h1, title, description):
-    conn = psycopg2.connect(DATABASE_URL)
+    conn = get_connection()
 
     with conn.cursor() as cur:
         cur.execute("INSERT INTO url_checks ("
@@ -82,7 +86,7 @@ def add_check_to_db(url_id, status_code, h1, title, description):
 
 
 def get_url_with_latest_check():
-    conn = psycopg2.connect(DATABASE_URL)
+    conn = get_connection()
 
     with conn.cursor(cursor_factory=NamedTupleCursor) as cur:
         cur.execute(
