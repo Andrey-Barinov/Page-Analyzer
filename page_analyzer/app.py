@@ -1,9 +1,9 @@
 import os
 import requests
 from dotenv import load_dotenv
-from page_analyzer.url_validator import validate
 from urllib.parse import urlparse
-from bs4 import BeautifulSoup
+from page_analyzer.url_validator import validate
+from page_analyzer.html_parser import parse_page
 from flask import (
     Flask,
     render_template,
@@ -26,6 +26,16 @@ from page_analyzer.db import (
 load_dotenv()
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
+
+
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template('404.html'), 404
+
+
+@app.errorhandler(500)
+def internal_server_error(e):
+    return render_template('500.html'), 500
 
 
 @app.get('/')
@@ -102,15 +112,9 @@ def add_check(id):
 
     status_code = response.status_code
 
-    html_data = BeautifulSoup(response.text, 'html.parser')
+    page_data = parse_page(response.text)
 
-    title = html_data.title.string if html_data.title else None
-    h1 = html_data.h1.string if html_data.h1 else None
-    description = html_data.find('meta', {'name': 'description'})
-    if description:
-        description = description.get('content')
-
-    add_check_to_db(id, status_code, h1, title, description)
+    add_check_to_db(id, status_code, page_data)
 
     flash('Страница успешно проверена', 'success')
 

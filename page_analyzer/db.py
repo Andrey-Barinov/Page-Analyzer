@@ -51,7 +51,7 @@ def get_url_by_id(url_id):
     return url_data
 
 
-def add_check_to_db(url_id, status_code, h1, title, description):
+def add_check_to_db(url_id, status_code, page_data):
     conn = get_connection()
 
     with conn.cursor() as cur:
@@ -63,7 +63,12 @@ def add_check_to_db(url_id, status_code, h1, title, description):
                     "description "
                     ") "
                     "VALUES (%s, %s, %s, %s, %s)",
-                    (url_id, status_code, h1, title, description)
+                    (url_id,
+                     status_code,
+                     page_data['h1'],
+                     page_data['title'],
+                     page_data['description']
+                     )
                     )
         conn.commit()
         conn.close()
@@ -71,13 +76,13 @@ def add_check_to_db(url_id, status_code, h1, title, description):
 
 def get_urls_with_latest_check():
     conn = get_connection()
-    query = "SELECT urls.id, "\
-            "urls.name, "\
-            "COALESCE(url_checks.status_code::text, '') as status_code, "\
-            "COALESCE(MAX(url_checks.created_at)::text, '') as latest_check "\
-            "FROM urls "\
-            "LEFT JOIN url_checks ON urls.id = url_checks.url_id "\
-            "GROUP BY urls.id, url_checks.status_code "\
+    query = "SELECT urls.id, " \
+            "urls.name, " \
+            "COALESCE(url_checks.status_code::text, '') as status_code, " \
+            "COALESCE(MAX(url_checks.created_at)::text, '') as latest_check " \
+            "FROM urls " \
+            "LEFT JOIN url_checks ON urls.id = url_checks.url_id " \
+            "GROUP BY urls.id, url_checks.status_code " \
             "ORDER BY urls.id DESC"
 
     all_urls_with_latest_check = fetch_all(conn, query)
@@ -87,14 +92,14 @@ def get_urls_with_latest_check():
 
 def get_checks_desc(url_id):
     conn = psycopg2.connect(DATABASE_URL)
-    query = "SELECT id, "\
-            "status_code, "\
-            "COALESCE(h1, '') as h1, "\
-            "COALESCE(title, '') as title, "\
-            "COALESCE(description, '') as description, "\
-            "created_at::text "\
-            "FROM url_checks "\
-            "WHERE url_id = %s "\
+    query = "SELECT id, " \
+            "status_code, " \
+            "COALESCE(h1, '') as h1, " \
+            "COALESCE(title, '') as title, " \
+            "COALESCE(description, '') as description, " \
+            "created_at::text " \
+            "FROM url_checks " \
+            "WHERE url_id = %s " \
             "ORDER BY id DESC"
     value = (url_id,)
 

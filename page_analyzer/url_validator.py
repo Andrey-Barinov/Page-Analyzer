@@ -6,5 +6,3 @@ def validate(url):
         return 'URL превышает 255 символов'
     elif validators.url(url) is not True:
         return 'Некорректный URL'
-    else:
-        return ''
