@@ -16,6 +16,10 @@ from page_analyzer.db import (
 def url():
     return 'https://hello_world.com'
 
+@pytest.fixture
+def home_page():
+    return 'https://python-project-83-rael.onrender.com/'
+
 
 def test_add_url_to_db_and_get_url_by_name(url):
     add_url_to_db(url)
@@ -95,22 +99,22 @@ def test_get_url(client):
     assert 'https://right1.com' in text
 
 
-def test_url_added(page: Page, url):
-    page.goto(url, timeout=15000)
+def test_url_added(page: Page, home_page):
+    page.goto(home_page, timeout=15000)
     page.locator('input[name="url"]').type('http://right.com')
     page.locator('input[type="submit"]').click()
     expect(page.get_by_text('Страница успешно добавлена')).to_be_visible()
 
 
-def test_url_already_added(page: Page, url):
-    page.goto(url)
+def test_url_already_added(page: Page, home_page):
+    page.goto(home_page)
     page.locator('input[name="url"]').type('http://right.com')
     page.locator('input[type="submit"]').click()
     expect(page.get_by_text('Страница уже существует')).to_be_visible()
 
 
-def test_url_validator(page: Page, url):
-    page.goto(url)
+def test_url_validator(page: Page, home_page):
+    page.goto(home_page)
     page.locator('input[name="url"]').type('htp://wrong.com')
     page.locator('input[type="submit"]').click()
     expect(page.get_by_text('Некорректный URL')).to_be_visible()
@@ -118,16 +122,16 @@ def test_url_validator(page: Page, url):
     page.locator('input[type="submit"]').click()
 
 
-def test_url_not_pass_check(page: Page, url):
-    page.goto(url)
+def test_url_not_pass_check(page: Page, home_page):
+    page.goto(home_page)
     page.locator('input[name="url"]').type('http://wrong.com')
     page.locator('input[type="submit"]').click()
     page.locator('text=Запустить проверку').click()
     expect(page.get_by_text('Произошла ошибка при проверке')).to_be_visible()
 
 
-def test_url_pass_check_and_check_info_added(page: Page, url):
-    page.goto(url)
+def test_url_pass_check_and_check_info_added(page: Page, home_page):
+    page.goto(home_page)
     page.locator('input[name="url"]').type('https://www.google.com/')
     page.locator('input[type="submit"]').click()
     page.locator('text=Запустить проверку').click()

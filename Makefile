@@ -23,7 +23,6 @@ test:
 selfcheck:
 	poetry check
 
-check:
-	 lint test
+check: test lint
 
 .PHONY: install test lint selfcheck check build
