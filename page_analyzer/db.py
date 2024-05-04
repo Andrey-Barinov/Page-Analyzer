@@ -17,7 +17,6 @@ def fetch_all(connection, query, values=()):
         cur.execute(query, values)
 
         data = cur.fetchall()
-
         connection.commit()
         connection.close()
     return data

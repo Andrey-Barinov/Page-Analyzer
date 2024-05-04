@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 from urllib.parse import urlparse
 from page_analyzer.url_validator import validate
 from page_analyzer.html_parser import parse_page
+from page_analyzer.tasks import async_check_all_urls
 from flask import (
     Flask,
     render_template,
@@ -78,8 +79,16 @@ def add_url():
 @app.get('/urls')
 def show_all_urls():
     all_urls = get_urls_with_latest_check()
+    message = get_flashed_messages(with_categories=True)
+    return render_template('urls.html', all_urls=all_urls, message=message)
 
-    return render_template('urls.html', all_urls=all_urls)
+
+@app.post('/urls/checks')
+def check_all_urls():
+    async_check_all_urls.delay()
+    flash('Процесс проверки всех страниц запушен', 'success')
+
+    return redirect(url_for('show_all_urls'))
 
 
 @app.get('/urls/<int:id>')

@@ -95,11 +95,6 @@ def test_get_url(client):
     assert 'https://right1.com' in text
 
 
-@pytest.fixture
-def url():
-    return 'https://python-project-83-rael.onrender.com'
-
-
 def test_url_added(page: Page, url):
     page.goto(url, timeout=15000)
     page.locator('input[name="url"]').type('http://right.com')
