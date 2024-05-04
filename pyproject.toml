@@ -17,6 +17,8 @@ psycopg2-binary = "^2.9.9"
 validators = "^0.28.0"
 requests = "^2.31.0"
 beautifulsoup4 = "^4.12.3"
+celery = "^5.4.0"
+redis = "^5.0.4"
 
 
 [tool.poetry.group.dev.dependencies]
